@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "clargumentsparser",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/castlele/CLArgumentsParser.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "e27e34554e8e77729d5b6097bd89e5711aaac58c"
+      }
+    }
+  ],
+  "version" : 2
+}
