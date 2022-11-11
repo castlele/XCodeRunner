@@ -4,10 +4,16 @@ import Foundation
 public final class CommandRunner: Configurable {
 
     private var printer: Printer?
+    private var xcodeManager: XCodeManagerProtocol?
 
-    public func configure(with printer: Printer) {
-        self.printer = printer
+    // MARK: - Configurable 
+
+    public func configure(with configurator: CommandRunnerConfigurator) {
+        self.printer = configurator.printer
+        self.xcodeManager = configurator.xcodeManager
     }
+
+    // MARK: - Public methods
 
     public func process(parsingResults results: Result<[Command], Error>) {
         switch results {
@@ -55,6 +61,13 @@ public final class CommandRunner: Configurable {
                 return process(options: command.options)
 
             case .versions:
+                if let versions = xcodeManager?.getVersions(), !versions.isEmpty {
+                    printer?.printMessage(String(format: versionsCommandMessage,
+                                                 versions.joined(separator: ", ")))
+                } else {
+                    printer?.printMessage(noVersionsAvailableMessage)
+                }
+
                 return false
 
             default:

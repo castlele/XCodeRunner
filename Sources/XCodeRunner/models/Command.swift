@@ -15,7 +15,7 @@ public enum CommandType: String, StringRepresentable, CaseIterable, ArgsRangeHol
 
         switch self {
             case .main:
-                return "./.build/debug/xrunner"
+                return ".build/debug/xrunner"
             default:
                 return rawValue
         }
