@@ -34,5 +34,7 @@ public struct App {
 
         commandRunner.configure(with: runnerConfigurator)
         commandRunner.process(parsingResults: parsingResults)
+
+        fileManager.save(config: configurationsManager.getConfiguration())
     }
 }

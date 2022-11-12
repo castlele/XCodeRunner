@@ -2,7 +2,7 @@ import Foundation
 
 public class DefaultFileManager: FileManagerProtocol {
 
-    private let path = "~/.config/xrunner/"
+    private let path = ".config/xrunner"
     private let configFileName = "config.json"
 
     private let logger = Logger()
@@ -18,8 +18,19 @@ public class DefaultFileManager: FileManagerProtocol {
 
     private var printer: Printer?
 
+    private var homeDirectory: NSString {
+        let prefix = "file:/"
+        var path = fileManager.homeDirectoryForCurrentUser.absoluteString
+        path.removeSubrange(path.startIndex..<path.index(path.startIndex, offsetBy: prefix.count))
+        return path as NSString
+    }
+    
+    private var baseFolder: String {
+        homeDirectory.appendingPathComponent(path)
+    }
+
     private var configPath: String {
-        path + configFileName
+        (baseFolder as NSString).appendingPathComponent(configFileName)
     }
 
     // MARK: - FileManagerProtocol
@@ -41,11 +52,21 @@ public class DefaultFileManager: FileManagerProtocol {
 
     public func getConfiguration() -> Configuration? {
         if !isFileExists(atPath: configPath) {
+            createFolderIfNeeded(atPath: baseFolder)
             createFile(atPath: configPath, withObject: Configuration.defaultConfig)
             return Configuration.defaultConfig
         }
 
         return getContents(fromFilePath: configPath)
+    }
+
+    public func save(config: Configuration) {
+        let fullPath = "file://" + configPath
+
+        guard let url = URL(string: fullPath) else { return }
+
+        let data = encode(object: config)
+        try? data?.write(to: url)
     }
 
     // MARK: - Private methods
@@ -57,12 +78,20 @@ public class DefaultFileManager: FileManagerProtocol {
     }
 
     private func isFileExists(atPath path: String) -> Bool {
-        return false
+        fileManager.fileExists(atPath: path)
     }
 
     private func createFile<T: Encodable>(atPath path: String, withObject obj: T? = nil) {
         let data = encode(object: obj)
         fileManager.createFile(atPath: path, contents: data)
+    }
+
+    private func createFolderIfNeeded(atPath path: String) {
+        var isDirectory: ObjCBool = true
+
+        if !fileManager.fileExists(atPath: path, isDirectory: &isDirectory) {
+            try? fileManager.createDirectory(atPath: path, withIntermediateDirectories: true)
+        }
     }
 
     // TODO: add concurrency
